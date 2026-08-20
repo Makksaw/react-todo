@@ -4,6 +4,7 @@ import "./App.css"
 
 function App() {
   const [taskInput, setTaskInput] = useState("")
+  const [priority, setPriority] = useState("medium")
   const [tasks, setTasks] = useState([])
   console.log(tasks)
 
@@ -11,9 +12,15 @@ function App() {
     e.preventDefault()
     setTasks([
       ...tasks,
-      { id: uuidv4(), name: taskInput.trim(), isCompleted: false },
+      {
+        id: uuidv4(),
+        name: taskInput.trim(),
+        isCompleted: false,
+        priority: priority,
+      },
     ])
     setTaskInput("")
+    setPriority("medium")
   }
 
   const handleDeleteTask = (id) => {
@@ -34,6 +41,16 @@ function App() {
     )
   }
 
+  const sortedTasks = [...tasks].sort((a, b) => {
+    const priorityOrder = {
+      high: 1,
+      medium: 2,
+      low: 3,
+    }
+
+    return priorityOrder[a.priority] - priorityOrder[b.priority]
+  })
+
   return (
     <div className="todo-app">
       <div className="todo-container">
@@ -52,6 +69,16 @@ function App() {
               onChange={(e) => setTaskInput(e.target.value)}
             />
 
+            <select
+              className="priority-select"
+              value={priority}
+              onChange={(e) => setPriority(e.target.value)}
+            >
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+
             <button
               className="add-button"
               type="submit"
@@ -65,9 +92,12 @@ function App() {
         <div className="todo-list">
           {tasks.length === 0
             ? "No available tasks"
-            : tasks.map((task) => {
+            : sortedTasks.map((task) => {
                 return (
-                  <div className="todo-item" key={task.id}>
+                  <div
+                    className={`todo-item priority-${task.priority} ${task.isCompleted ? "completed" : ""}`}
+                    key={task.id}
+                  >
                     <input
                       type="checkbox"
                       className="todo-checkbox"
@@ -75,7 +105,13 @@ function App() {
                       onChange={() => handleToggleTask(task.id)}
                     />
 
-                    <span className="todo-text">{task.name}</span>
+                    <div className="todo-content">
+                      <span className="todo-text">{task.name}</span>
+
+                      <span className={`priority-badge ${task.priority}`}>
+                        {task.priority}
+                      </span>
+                    </div>
 
                     <button
                       className="delete-button"
